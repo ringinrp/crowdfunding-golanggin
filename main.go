@@ -1,9 +1,9 @@
 package main
 
 import (
+	"crowdfunding/handler"
 	"crowdfunding/user"
 	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -11,40 +11,23 @@ import (
 )
 
 func main() {
-	//dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-	// dsn := "root:@tcp(127.0.0.1:3306)/crowdfunding?charset=utf8mb4&parseTime=True&loc=Local"
-	// db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
-	// if err != nil {
-	// 	log.Fatal(err.Error())
-	// }
-
-	// fmt.Println("DB Connection Good")
-
-	// var users []user.User
-	// db.Find(&users)
-
-	// for _, user := range users {
-	// 	fmt.Println(user.Name)
-	// 	fmt.Println(user.Email)
-	// 	fmt.Println("=============")
-	// }
-
-	router := gin.Default()
-	router.GET("/handler", handler)
-	router.Run()
-
-}
-
-func handler(c *gin.Context) {
+	// dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
 	dsn := "root:@tcp(127.0.0.1:3306)/crowdfunding?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	var users []user.User
-	db.Find(&users)
+	userRepository := user.NewRepository(db)
+	userService := user.NewService(userRepository)
 
-	c.JSON(http.StatusOK, users)
+	userHandler := handler.NewUserHandler(userService)
+
+	router := gin.Default()
+	api := router.Group("/api/v1")
+
+	api.POST("/users", userHandler.RegisterUser)
+
+	router.Run()
 }
