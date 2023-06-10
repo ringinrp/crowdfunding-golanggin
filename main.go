@@ -3,6 +3,7 @@ package main
 import (
 	"crowdfunding/handler"
 	"crowdfunding/user"
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,16 @@ func main() {
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
+
+	userByEmail, err := userRepository.FindByEmail("ro0y21@gmail.com")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	if userByEmail.ID == 0 {
+		fmt.Print("User tidak ditemukan...")
+	} else {
+		fmt.Println(userByEmail.Name)
+	}
 
 	userHandler := handler.NewUserHandler(userService)
 
